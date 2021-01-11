@@ -1,12 +1,72 @@
-namespace DynamicProgrammingCourse
+namespace Interviews.LeetCode
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
 
     /// <summary> https://www.youtube.com/watch?v=OQ5jsbhAv_M </summary>
     public class DynamicProgramming
     {
+        
+        #region TABULATION
+        public List<List<int>> AllSumTabulationV2(int[] arr, int target)
+        {
+            List<List<int>>[] result = new List<List<int>>[target + 1];
+            result[0] = new List<List<int>> { new List<int>() };
+            for (int currentIndex = 0; currentIndex < result.Length; currentIndex++)
+            {
+                if (result[currentIndex] != null)
+                {
+                    foreach (int val in arr)
+                    {
+                        if (currentIndex + val < result.Length)
+                        {
+                            if (result[currentIndex + val] == null)
+                            {
+                                result[currentIndex + val] = new List<List<int>> ();
+                            }
+
+                            List<List<int>> currentLists = new List<List<int>>(result[currentIndex]);
+                            foreach (List<int> list in currentLists)
+                            {
+                                result[currentIndex + val].Add(new List<int>(list) {val});
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result[target];
+        }
+        
+        public List<List<int>> AllSumTabulation(int[] arr, int target)
+        {
+            List<List<int>> resultList = new List<List<int>>();
+            List<int>[] result = new List<int>[target + 1];
+            result[0] = new List<int>();
+            for (int currentResultIndex = 0; currentResultIndex < result.Length; currentResultIndex++)
+            {
+                if (result[currentResultIndex] != null)
+                {
+                    foreach (int val in arr)
+                    {
+                        if (val + currentResultIndex < result.Length)
+                        {
+                            result[val + currentResultIndex] = new List<int> {val}; //  add current value in the 'future list' 
+                            result[val + currentResultIndex].AddRange(result[currentResultIndex]); // copy current items into the 'future list'
+                            if (result[val + currentResultIndex].Sum() == target)
+                            {
+                                resultList.Add(result[val + currentResultIndex]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return resultList;
+        }
+        
         /// <summary> Time complexity = O(n^m)
         /// Space complexity = O(n^m)
         /// Where n = targetWord.Length and m = words.Length. </summary>
@@ -32,7 +92,7 @@ namespace DynamicProgrammingCourse
                         {
                             foreach (List<string> list in result[i])
                             {
-                                result[i + word.Length].Add(new List<string>(list) {word});
+                                result[i + word.Length].Add(new List<string>(list) { word });
                             }
                         }
                     }
@@ -106,7 +166,6 @@ namespace DynamicProgrammingCourse
             return result[targetWord.Length];
         }
 
-
         public int[] BestSumTabulation(int[] arr, int target)
         {
             List<int>[] result = new List<int>[target + 1];
@@ -164,7 +223,6 @@ namespace DynamicProgrammingCourse
 
             return result[target] != null ? result[target].ToArray() : null;
         }
-
 
         /// <summary>
         /// EG:  [TestCase(new[] { 5, 3, 4 }, 7, true)]
@@ -238,6 +296,9 @@ namespace DynamicProgrammingCourse
             return d[n];
         }
 
+        #endregion
+
+        #region Memoisation
         public List<List<string>> AllConstructWord(string target, string[] dict)
         {
             var cache = new Dictionary<string, List<List<string>>>();
@@ -272,7 +333,6 @@ namespace DynamicProgrammingCourse
             var cache = new Dictionary<string, int>();
             return CountWordBreakRecHelper(target, dict, cache);
         }
-
 
         private static int CountWordBreakRecHelper(string target, string[] dict, IDictionary<string, int> cache)
         {
@@ -348,18 +408,52 @@ namespace DynamicProgrammingCourse
 
             return dp[s.Length];
         }
+
+        public List<List<int>> AllSum(int[] arr, int target)
+        {
+            var result = AllSumHelper(arr, target);
+            return result;
+        }
+
+        private static List<List<int>> AllSumHelper(int[] arr, int target)
+        {
+            if (target == 0) return new List<List<int>>() { new List<int>() };
+            if (target < 0) return null;
+            var result = new List<List<int>>();
+
+            foreach (int val in arr)
+            {
+                int remainder = target - val;
+                List<List<int>> newResult = AllSumHelper(arr, remainder);
+                if (newResult != null)
+                {
+                    newResult.ForEach(item => item.Add(val));
+                    result.AddRange(newResult);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary> The shortest set of numbers that could sum up to the given target.
+        /// [3,4,2], target = 10
+        /// best would be 4,4,2 because that has only 3 numbers to reach to 10.
+        /// 3,2,3,2 is also = 10 but not the best one. </summary>
+        /// <param name="arr"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
         public List<int> BestSum(int[] arr, int target)
         {
-            var resultColl = new List<List<int>>();
             var cache = new Dictionary<int, List<int>>();
             var result = BestSumHelper(arr, target, cache);
             return result;
         }
 
-
         private static List<int> BestSumHelper(int[] arr, int target, IDictionary<int, List<int>> cache)
         {
             if (cache.ContainsKey(target)) return cache[target];
+
+            // Base case, set the seed values.
             if (target == 0) return new List<int>();
             if (target < 0) return null;
 
@@ -372,8 +466,10 @@ namespace DynamicProgrammingCourse
 
                 if (result != null)
                 {
-                    List<int> newResult = new List<int>(result);
-                    newResult.Add(value);
+                    var newResult = new List<int>(result)
+                    {
+                        value
+                    };
 
                     if (shortestArr == null || newResult.Count < shortestArr.Count)
                     {
@@ -398,18 +494,26 @@ namespace DynamicProgrammingCourse
         private static List<int> HowSumHelper(int[] arr, int target, IDictionary<int, List<int>> cache)
         {
             if (cache.ContainsKey(target)) return cache[target];
+
+            // Base cases, setting up the seed values.
+            // when we have found the combination of numbers adding up to the target
+            // we return an empty list, this list will then be added with those numbers that contribute to the sum target.
             if (target == 0) return new List<int>();
+
+            // we return null if we go below zero.
             if (target < 0) return null;
 
             foreach (int value in arr)
             {
                 int remainder = target - value;
-                var result = HowSumHelper(arr, remainder, cache);
+                List<int> result = HowSumHelper(arr, remainder, cache);
 
                 if (result != null)
                 {
-                    List<int> newResult = new List<int>(result);
-                    newResult.Add(value);
+                    var newResult = new List<int>(result) // add the previous result into the new list.
+                    {
+                        value // add the value that successfully caused the target to reach to 0.
+                    };
                     cache[target] = newResult;
                     return newResult;
                 }
@@ -426,29 +530,15 @@ namespace DynamicProgrammingCourse
             return CanSumHelper(arr, target, cache);
         }
 
-        //private static bool CanSumHelper(int[] arr, int target, IDictionary<int, bool> cache)
-        //{
-        //    if (cache.ContainsKey(target)) return cache[target];
-        //    if (target == 0) return true;
-        //    if (target < 0) return false;
-
-        //    foreach (int value in arr)
-        //    {
-        //        int remainder = target - value;
-        //        if (CanSumHelper(arr, remainder, cache))
-        //        {
-        //            cache[target] = true;
-        //            return true;
-        //        }
-        //    }
-        //    cache[target] = false;
-        //    return false;
-        //}
-
         private static bool CanSumHelper(int[] arr, int target, IDictionary<int, bool> cache)
         {
             if (cache.ContainsKey(target)) return cache[target];
+
+            // base case or set the seed values: if we keep subtracting the values in the array from the target, and we should
+            // hit 0 at the end, in that case it would be possible.
             if (target == 0) return true;
+
+            // if the target becomes 1 after subtractions, then its not possible.
             if (target == 1) return false;
 
             foreach (int value in arr)
@@ -456,6 +546,9 @@ namespace DynamicProgrammingCourse
                 if (target >= value)
                 {
                     int remainder = target - value;
+
+                    // we call this method recursively to check all the values in the array to see if any of them can  be subtracted
+                    // from the target. This is okay because we can use the values in the array as many times we want.
                     if (CanSumHelper(arr, remainder, cache))
                     {
                         cache[target] = true;
@@ -477,26 +570,96 @@ namespace DynamicProgrammingCourse
 
         private uint GridTravelerHelper(int rows, int cols, IDictionary<string, uint> cache)
         {
+            Debug.WriteLine($"row = {rows}, col = {cols}");
             var key = rows.ToString() + cols;
             if (cache.ContainsKey(key))
             {
                 return cache[key];
             }
+
+            // base cases, or setting the seed values. Its important in recursion to think of the smallest problem that we want to solve:
+            // in this case, we are making an assumption that a grid that has 1 row and 1 col, it has 1 and only 1 say to navigate.
             if (rows == 1 && cols == 1) return 1;
+
+            // we are also making assumption that if a gird has no rows OR no cols, then there is 0 way to navigate.
+            // those are correct assumptions since any grid that has either 0 rows or cols, it wont exist, hence 0 way to navigate.
             if (rows == 0 || cols == 0) return 0;
 
+            //           we  go up one step                        // we go right one step.
             uint value = GridTravelerHelper(rows - 1, cols, cache) + GridTravelerHelper(rows, cols - 1, cache);
             cache[key] = value;
             return value;
         }
+        public double FibWithIteration(int n)
+        {
+            double x = 0;
+            double y = 1;
+            double z = 0;
+            for (int i = 0; i < n - 1; i++)
+            {
+                z = x + y;
+                x = y;
+                y = z;
+            }
 
-        //public int GridTraveler(int[][] grid)
-        //{
-        //    if (grid.GetLength(0) == 1 && grid.GetLength(1) == 1) return 1;
-        //    if (grid.GetLength(0) == 0 && grid.GetLength(0) == 0) return 0;
+            return z;
+        }
 
-        //    return GridTraveler(ChopLeftColumn(grid)) + GridTraveler(ChopTopRow(grid));
-        //}
+        public double FibWithRecursion(int n)
+        {
+            if (n <= 2)
+            {
+                return 1;
+            }
+
+            return FibWithMem(n - 1) + FibWithMem(n - 2);
+        }
+
+        public double FibWithMem(int n)
+        {
+            IDictionary<int, double> mem = new Dictionary<int, double>();
+            double f = FibHelper(n, mem);
+            return f;
+        }
+
+        private double FibHelper(int n, IDictionary<int, double> mem)
+        {
+            // check 1. if we already have value for the n in dict?
+            if (mem.ContainsKey(n)) return mem[n];
+
+            // when n is 2 or 1, return 1 because we already know that 2 and 1 has fib value 1.
+            if (n <= 2) return 1;
+
+            // compute the fib for n-1 + n-2
+            double f = FibHelper(n - 1, mem) + FibHelper(n - 2, mem);
+
+            // put the fib value of n in the dict for check 1.
+            mem[n] = f;
+            return f;
+        }
+
+        // Bottom-Up dynamic programming algorithm!!
+        public double FibIterativeMem(int n)
+        {
+            double f = 0;
+            var mem = new Dictionary<int, double>();
+            for (int i = 0; i <= n; i++)
+            {
+                if (i <= 2)
+                {
+                    f = 1;
+                }
+                else
+                {
+                    f = mem[i - 1] + mem[i - 2];
+                }
+
+                mem[i] = f;
+            }
+
+            return mem[n];
+        }
+        #endregion
 
         public int[][] ChopTopRow(int[][] grid)
         {
@@ -605,6 +768,23 @@ namespace DynamicProgrammingCourse
             }
         }
 
+        /// <summary>
+        /// [3, 10, 3, 1, 2 ]
+        /// ans: 12 = 10  + 2  i.e index [1] + [4]
+        ///
+        /// Its like we are flowing the numbers from b to a then to temp.
+        /// Doing so, we can use temp (which is  1 number behind b) to find the maxi mum sum of 2 numbers that are at least 1 number apart.
+        /// lets say val = 3, b =10, a = 3, temp = 0
+        /// since val = 3, we add that with temp (which is 0) so 3 which is less than 10.
+        /// b stays 10.
+        /// next, val becomes 1, b stays 10, a becomes 10 and temp = 3
+        /// val + temp = 1 + 3 = 4, b stays 10.
+        /// next, val = 2, b = 10, a = 10, temp = 10
+        /// val + temp = 2 + 10 = 12, b = becomes 12 - we now return 12 since its the end of the loop.
+        /// 
+        /// </summary>
+        /// <param name="arr"></param>
+        /// <returns></returns>
         public int FlowerBox(int[] arr)
         {
             int a = 0;
@@ -620,91 +800,19 @@ namespace DynamicProgrammingCourse
             return b;
         }
 
-        public double FibWithIteration(int n)
+        public int DecodeNumbers(string code)
         {
-            double x = 0;
-            double y = 1;
-            double z = 0;
-            for (int i = 0; i < n - 1; i++)
-            {
-                z = x + y;
-                x = y;
-                y = z;
-            }
-
-            return z;
-        }
-
-
-        public double FibWithRecursion(int n)
-        {
-            if (n <= 2)
-            {
-                return 1;
-            }
-
-            return FibWithMem(n - 1) + FibWithMem(n - 2);
-        }
-
-
-        public double FibWithMem(int n)
-        {
-            IDictionary<int, double> mem = new Dictionary<int, double>();
-            double f = FibHelper(n, mem);
-            return f;
-        }
-
-        private double FibHelper(int n, IDictionary<int, double> mem)
-        {
-            // check 1. if we already have value for the n in dict?
-            if (mem.ContainsKey(n)) return mem[n];
-
-            // when n is 2 or 1, return 1 because we already know that 2 and 1 has fib value 1.
-            if (n <= 2) return 1;
-
-            // compute the fib for n-1 + n-2
-            double f = FibHelper(n - 1, mem) + FibHelper(n - 2, mem);
-
-            // put the fib value of n in the dict for check 1.
-            mem[n] = f;
-            return f;
-        }
-
-        // Bottom-Up dynamic programming algorithm!!
-        public double FibIterativeMem(int n)
-        {
-            double f = 0;
-            var mem = new Dictionary<int, double>();
-            for (int i = 0; i <= n; i++)
-            {
-                if (i <= 2)
-                {
-                    f = 1;
-                }
-                else
-                {
-                    f = mem[i - 1] + mem[i - 2];
-                }
-
-                mem[i] = f;
-            }
-
-            return mem[n];
-        }
-
-        public int DecodeNumbers(string s)
-        {
-            int[] waysToDecode = new int[s.Length + 1];
+            int[] waysToDecode = new int[code.Length + 1];
             waysToDecode[0] = 1; // number of ways to decode a string of len 0 is 1
-            waysToDecode[1] = s[0] == '0' ? 0 : 1; // number of ways to decode a string of len 1 could be 0 or 1 depending upon the string containing 0 or any from 1 till 9.
+            waysToDecode[1] = code[0] == '0' ? 0 : 1; // number of ways to decode a string of len 1 could be 0 or 1 depending upon the string containing 0 or any from 1 till 9.
 
-            for (int i = 2; i <= s.Length; i++)
+            for (int i = 2; i <= code.Length; i++)
             {
                 // get the number (int value) of current char 
-                int digit = int.Parse(s.Substring(i - 1, 1));
+                int digit = int.Parse(code.Substring(i - 1, 1));
 
                 // get the last 2 numbers because we dont have mapping for 3 numbers. Z = 26!!
-                int lastTwoDigits = int.Parse(s.Substring(i - 2, 2));
+                int lastTwoDigits = int.Parse(code.Substring(i - 2, 2));
                 if (digit >= 1)
                 {
                     // we know the mapping exists from 1 till 9
@@ -724,7 +832,7 @@ namespace DynamicProgrammingCourse
             // our array has been filled up to the end
             // our array stores  the maximum ways to decode the input string up till the index, 
             // the index represents the number of chars in the input string.
-            return waysToDecode[s.Length];
+            return waysToDecode[code.Length];
         }
 
         // using 2 variables instead of an array...
