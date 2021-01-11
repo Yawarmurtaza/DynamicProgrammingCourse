@@ -1,6 +1,7 @@
-namespace DynamicProgrammingCourse.Tests
+namespace Interviews.LeetCode.Tests
 {
     using System.Collections.Generic;
+    using System.Linq;
     using NUnit.Framework;
 
     [TestFixture]
@@ -12,6 +13,177 @@ namespace DynamicProgrammingCourse.Tests
         public void Setup()
         {
             runner = new DynamicProgramming();
+        }
+
+       [Test]
+        public void AllSumTabulationV2Test_Target300()
+        {
+            var arr = new[] { 7, 14 };
+            var target = 300;
+            var result = runner.AllSumTabulationV2(arr, target);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void AllSumTabulationV2Test_Target11()
+        {
+            var arr = new[] { 3, 2 };
+            int target = 11;
+            List<List<int>> result = runner.AllSumTabulationV2(arr, target);
+
+            Assert.AreEqual(9, result.Count);
+            foreach (List<int> list in result)
+            {
+                Assert.AreEqual(target, list.Sum());
+            }
+        }
+
+        [Test]
+        public void AllSumTabulationV2Test_Target7()
+        {
+            var arr = new[] { 3, 2 };
+            int target = 7;
+            List<List<int>> result = runner.AllSumTabulationV2(arr, target);
+
+            Assert.AreEqual(3, result.Count);
+            foreach (List<int> list in result)
+            {
+                Assert.AreEqual(target, list.Sum());
+            }
+
+            arr = new[] { 4, 3, 4 };
+            target = 7;
+            result = runner.AllSumTabulationV2(arr, target);
+            Assert.AreEqual(4, result.Count);
+
+            foreach (List<int> list in result)
+            {
+                Assert.AreEqual(target, list.Sum());
+            }
+
+            // should return 0 
+
+            arr = new[] { 10, 10 };
+            target = 7;
+            result = runner.AllSumTabulationV2(arr, target);
+            Assert.IsNull(result);
+
+
+            arr = new[] { 4, 2 };
+            target = 7;
+            result = runner.AllSumTabulationV2(arr, target);
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void AllSumTabulationV2Test_Target8()
+        {
+            var arr = new[] {3, 2, 7, 1};
+            int target = 8;
+            List<List<int>> result = runner.AllSumTabulationV2(arr, target);
+
+            Assert.AreEqual(83, result.Count);
+            foreach (List<int> list in result)
+            {
+                Assert.AreEqual(target, list.Sum());
+            }
+
+
+            arr = new[] { 2, 3, 5 };
+            target = 8;
+            result = runner.AllSumTabulationV2(arr, target);
+
+            Assert.AreEqual(6, result.Count);
+            foreach (List<int> list in result)
+            {
+                Assert.AreEqual(target, list.Sum());
+            }
+        }
+
+
+        [Test]
+        public void AllSumTabulationTest_Target300()
+        {
+            var arr = new[] { 7, 14 };
+            var target = 300;
+            var result = runner.AllSumTabulation(arr, target);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void AllSumTabulationTest_Target11()
+        {
+            var arr = new[] { 3, 2 };
+            int target = 11;
+            List<List<int>> result = runner.AllSumTabulation(arr, target);
+
+            Assert.AreEqual(2, result.Count);
+            foreach (List<int> list in result)
+            {
+                Assert.AreEqual(target, list.Sum());
+            }
+        }
+
+        [Test]
+        public void AllSumTabulationTest_Target7()
+        {
+            var arr = new[] { 3, 2 };
+            int target = 7;
+            List<List<int>> result = runner.AllSumTabulation(arr, target);
+
+            Assert.AreEqual(2, result.Count);
+            foreach (List<int> list in result)
+            {
+                Assert.AreEqual(target, list.Sum());
+            }
+
+            arr = new[] { 4, 3, 4 };
+            target = 7;
+            result = runner.AllSumTabulation(arr, target);
+            Assert.AreEqual(3, result.Count);
+
+            foreach (List<int> list in result)
+            {
+                Assert.AreEqual(target, list.Sum());
+            }
+
+            // should return 0 
+
+            arr = new[] { 10, 10 };
+            target = 7;
+            result = runner.AllSumTabulation(arr, target);
+            Assert.AreEqual(0, result.Count);
+
+
+            arr = new[] { 4, 2 };
+            target = 7;
+            result = runner.AllSumTabulation(arr, target);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [Test]
+        public void AllSumTabulationTest_Target8()
+        {
+            var arr = new[] {3, 2, 7, 1};
+            int target = 8;
+            List<List<int>> result = runner.AllSumTabulation(arr, target);
+
+            Assert.AreEqual(4, result.Count);
+            foreach (List<int> list in result)
+            {
+                Assert.AreEqual(target, list.Sum());
+            }
+
+
+            arr = new[] { 2, 3, 5 };
+            target = 8;
+            result = runner.AllSumTabulation(arr, target);
+
+            Assert.AreEqual(3, result.Count);
+            foreach (List<int> list in result)
+            {
+                Assert.AreEqual(target, list.Sum());
+            }
         }
 
         [Test]
@@ -75,7 +247,7 @@ namespace DynamicProgrammingCourse.Tests
             Assert.AreEqual(4, result.Count); // there should be only 4 possible options.
             Assert.AreEqual("abc", result[0][0]);
             Assert.AreEqual("def", result[0][1]);
-            
+
             Assert.AreEqual("ab", result[1][0]);
             Assert.AreEqual("c", result[1][1]);
             Assert.AreEqual("def", result[1][2]);
@@ -202,6 +374,19 @@ namespace DynamicProgrammingCourse.Tests
             Assert.AreEqual(expectedResult, result);
         }
 
+        [Test]
+        public void AllSumTest_235_8()
+        {
+            // Arrange.
+            int[] arr = { 2, 3, 5 };
+            const int target = 8;
+
+            var result = runner.AllSum(arr, target);
+
+            // Assert.
+            Assert.AreEqual(6, result.Count);
+        }
+
 
         [TestCase(new[] { 2, 3, 5 }, 8, new[] { 5, 3 })]
         [TestCase(new[] { 5, 3, 4, 7 }, 7, new[] { 7 })]
@@ -260,6 +445,7 @@ namespace DynamicProgrammingCourse.Tests
         [TestCase(2, 2, (uint)2)]
         [TestCase(2, 3, (uint)3)]
         [TestCase(3, 3, (uint)6)]
+        [TestCase(4, 4, (uint)20)]
         //[TestCase(18, 18, (uint)2333606220)]
         [TestCase(18, 18, (uint)1758125314)]
         public void GridTraveler(int rows, int cols, uint expectedRoutes)
